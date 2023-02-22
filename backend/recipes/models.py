@@ -1,19 +1,26 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.html import format_html
 
 User = get_user_model()
 
 
 class Tag(models.Model):
     name = models.CharField(max_length=20, unique=True)
-    color = models.CharField(max_length=7, unique=True, verbose_name="HEX-код")
     slug = models.SlugField(max_length=10, unique=True)
+    color = models.CharField(max_length=7, default="#ffffff", verbose_name="HEX-код")
 
     class Meta:
         ordering = ("slug",)
         verbose_name = "Тег"
         verbose_name_plural = "Теги"
         constraints = [models.UniqueConstraint(fields=["slug"], name="unique_slug")]
+
+    def colored_name(self):
+        return format_html(
+            '<span style="color: #{};">{}</span>',
+            self.color,
+        )
 
     def __str__(self):
         return self.name
