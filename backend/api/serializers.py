@@ -1,4 +1,4 @@
-from recipes.models import Tag
+from recipes.models import Tag, Ingredient, Recipe
 from rest_framework import serializers
 
 
@@ -11,3 +11,13 @@ class TagSerializer(serializers.ModelSerializer):
             "color",
             "slug",
         )
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = "__all__"
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    pass
