@@ -1,5 +1,5 @@
 import pdb
-
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
@@ -13,9 +13,10 @@ from users.serializers.nested.profile import (
 )
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(UserCreateSerializer):
     email = serializers.EmailField()
-    password = serializers.CharField(style={"input_type": "password"}, write_only=True)
+    password = serializers.CharField(style={"input_type": "password"},
+                                     write_only=True)
 
     class Meta:
         model = User
@@ -26,6 +27,45 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "password",
+        )
+
+
+class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+        )
+
+    def get_is_subscribed(self, obj):
+        if self.context.get('request').user.is_anonymous:
+            return False
+        user = self.context.get('request').user
+        return obj.authors.filter(user=user).exists()
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    email = serializers.ReadOnlyField()
+    id = serializers.ReadOnlyField()
+    username = serializers.ReadOnlyField()
+    first_name = serializers.ReadOnlyField()
+    last_name = serializers.ReadOnlyField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField(default=0)
+
+    class Meta:
+        model = Follow
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'recipes_count'
         )
 
     # def validate_email(self, value):
@@ -41,7 +81,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
     # def create(self, validated_data):
     #     user = User.objects.create_user(**validated_data)
     #     return user
-
 
 # class ChangePasswordSerializer(serializers.ModelSerializer):
 #     old_password = serializers.CharField(write_only=True)

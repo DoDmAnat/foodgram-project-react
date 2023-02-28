@@ -6,21 +6,25 @@ from django.core.validators import MinValueValidator
 class Tag(models.Model):
     name = models.CharField(max_length=20, unique=True)
     slug = models.SlugField(max_length=10, unique=True)
-    color = models.CharField(max_length=7, default="#ffffff", verbose_name="HEX-код")
+    color = models.CharField(max_length=7, default="#ffffff",
+                             verbose_name="HEX-код")
 
     class Meta:
         ordering = ("-id",)
         verbose_name = "Тег"
         verbose_name_plural = "Теги"
-        constraints = [models.UniqueConstraint(fields=["slug"], name="unique_slug")]
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="unique_slug")]
 
     def __str__(self):
         return self.name
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Название ингредиента")
-    measurement_unit = models.CharField(max_length=20, verbose_name="Единица измерения")
+    name = models.CharField(max_length=100,
+                            verbose_name="Название ингредиента")
+    measurement_unit = models.CharField(max_length=20,
+                                        verbose_name="Единица измерения")
 
     class Meta:
         verbose_name = "Ингредиент"
@@ -72,7 +76,7 @@ class IngredientAmount(models.Model):
         ordering = ("recipe", "ingredient")
 
     def __str__(self):
-        return f"{self.ingredient} - {self.amount}{self.ingredient.measurement_unit}"
+        return f"{self.ingredient}"
 
 
 class Recipe(models.Model):
@@ -83,7 +87,8 @@ class Recipe(models.Model):
         verbose_name="Автор рецепта",
     )
     name = models.CharField(max_length=200, verbose_name="Название рецепта")
-    image = models.ImageField(upload_to="recipes/", verbose_name="Картинка рецепта")
+    image = models.ImageField(upload_to="recipes/",
+                              verbose_name="Картинка рецепта")
     description = models.TextField(verbose_name="Описание рецепта")
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -91,7 +96,8 @@ class Recipe(models.Model):
         through="IngredientAmount",
         verbose_name="Ингредиенты",
     )
-    tags = models.ManyToManyField(Tag, related_name="recipe", verbose_name="Тэг")
+    tags = models.ManyToManyField(Tag, related_name="recipe",
+                                  verbose_name="Тэг")
     time = models.PositiveSmallIntegerField("Время приготовления")
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
@@ -134,7 +140,8 @@ class Favorite(models.Model):
 
 class Cart(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="Пользователь", related_name="cart"
+        User, on_delete=models.CASCADE, verbose_name="Пользователь",
+        related_name="cart"
     )
     recipe = models.ForeignKey(
         Recipe,

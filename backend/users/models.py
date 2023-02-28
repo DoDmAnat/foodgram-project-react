@@ -27,8 +27,7 @@ class User(AbstractUser):
     )
 
     objects = UserManager()
-    REQUIRED_FIELDS = ["first_name", "last_name", "password", "username"]
-    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["email", "first_name", "last_name", "password", ]
 
     class Meta:
         verbose_name = "Пользователь"
@@ -62,7 +61,8 @@ class Follow(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["author", "user"], name="unique_follow")
+            models.UniqueConstraint(fields=["author", "user"],
+                                    name="unique_follow")
         ]
         ordering = ("author", "user")
         verbose_name = "Подписка"
