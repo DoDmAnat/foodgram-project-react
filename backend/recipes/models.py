@@ -1,8 +1,6 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from users.models import User
 from django.core.validators import MinValueValidator
-
-User = get_user_model()
 
 
 class Tag(models.Model):
@@ -95,7 +93,7 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(Tag, related_name="recipe", verbose_name="Тэг")
     time = models.PositiveSmallIntegerField("Время приготовления")
-    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True, db_index=True)
+    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
     class Meta:
         verbose_name = "Рецепт"

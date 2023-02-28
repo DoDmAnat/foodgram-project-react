@@ -21,9 +21,9 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "djoser",
+    "users",
     "recipes",
     "api",
-    "users",
 ]
 
 MIDDLEWARE = [
@@ -67,7 +67,7 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "postgres",
+        "NAME": "foodgram_db",
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "127.0.0.1",
@@ -109,7 +109,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "users.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (

@@ -59,8 +59,8 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = (IngredientsInline,)
     list_display = (
         "pk",
-        "author",
         "name",
+        "author",
     )
     list_filter = ("name", "author", "tags")
     search_fields = ("name", "author", "tags")
