@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_spectacular",
     "rest_framework",
     "rest_framework.authtoken",
     "django_filters",
@@ -116,24 +117,34 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly"
+        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'api.paginations.CustomPagination',
-    # 'PAGE_SIZE': 6,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 6,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "SEARCH_PARAM": "name",
 }
 
 DJOSER = {
-    "LOGIN_FIELD": "email",
     "HIDE_USERS": False,
-    # 'SERIALIZERS': {'user': 'users.serializers.UserSerializer',
-    #                 'user_create': 'users.serializers.CreateUserSerializer',
-    #                 'current_user': 'users.serializers.UserSerializer',
-    #                 },
-    # 'PERMISSIONS': {'user': ['rest_framework.permissions.IsAuthenticated'],
-    #                 'user_delete': ['rest_framework.permissions.IsAdminUser'],
-    #                 },
+    "SERIALIZERS": {
+        "user": "users.serializers.CustomUserSerializer",
+        "user_create": "users.serializers.RegistrationSerializer",
+    },
+    "PERMISSIONS": {
+        "user": ["rest_framework.permissions.AllowAny"],
+        "user_list": ["rest_framework.permissions.AllowAny"],
+    },
 }
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Foodgram",
+    "DESCRIPTION": "Продуктовый помощник",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_URLS_REGEX = r"^/api/.*$"

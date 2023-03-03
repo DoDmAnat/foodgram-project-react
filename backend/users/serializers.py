@@ -1,22 +1,14 @@
-import pdb
+from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
-from django.db import transaction
-from rest_framework import serializers
-from rest_framework.exceptions import ParseError
+from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError
 
-from users.models import User, Follow
-from users.serializers.nested.profile import (
-    ProfileShortSerializer,
-    ProfileUpdateSerializer,
-)
+from .mixins import IsSubscribedMixin
+from .models import User
 
 
 class RegistrationSerializer(UserCreateSerializer):
     email = serializers.EmailField()
-    password = serializers.CharField(style={"input_type": "password"},
-                                     write_only=True)
 
     class Meta:
         model = User
@@ -30,9 +22,7 @@ class RegistrationSerializer(UserCreateSerializer):
         )
 
 
-class CustomUserSerializer(UserSerializer):
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
-
+class CustomUserSerializer(UserSerializer, IsSubscribedMixin):
     class Meta:
         model = User
         fields = (
@@ -44,130 +34,51 @@ class CustomUserSerializer(UserSerializer):
             "is_subscribed",
         )
 
-    def get_is_subscribed(self, obj):
-        if self.context.get('request').user.is_anonymous:
-            return False
-        user = self.context.get('request').user
-        return obj.authors.filter(user=user).exists()
 
-
-class FollowSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
-    email = serializers.ReadOnlyField()
-    id = serializers.ReadOnlyField()
-    username = serializers.ReadOnlyField()
-    first_name = serializers.ReadOnlyField()
-    last_name = serializers.ReadOnlyField()
+class FollowSerializer(serializers.ModelSerializer, IsSubscribedMixin):
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField(default=0)
+    recipes_count = serializers.SerializerMethodField("get_recipes_count")
 
     class Meta:
-        model = Follow
+        model = User
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'recipes', 'recipes_count'
+            "email",
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+            "recipes",
+            "recipes_count",
         )
+        read_only_fields = ("email", "username", "first_name", "last_name")
 
-    # def validate_email(self, value):
-    #     email = value.lower()
-    #     if User.objects.filter(email=email).exists():
-    #         raise ParseError("Пользователь с такой почтой уже зарегистрирован.")
-    #     return email
+    def validate(self, data):
+        author_id = self.context.get("request").parser_context.get("kwargs").get("id")
+        author = get_object_or_404(User, id=author_id)
+        user = self.context.get("request").user
+        if user.follower.filter(author=author_id).exists():
+            raise ValidationError(
+                detail="Пользователь уже подписан",
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        if user == author:
+            raise ValidationError(
+                detail="Нельзя подписаться на самого себя",
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        return data
 
-    # def validate_password(self, value):
-    #     validate_password(value)
-    #     return value
+    def get_recipes(self, obj):
+        from api.serializers import FavoriteRecipesSerializer
 
-    # def create(self, validated_data):
-    #     user = User.objects.create_user(**validated_data)
-    #     return user
+        request = self.context.get("request")
+        limit = request.GET.get("recipes_limit")
+        recipes = obj.recipes.all()
+        if limit:
+            recipes = recipes[: int(limit)]
+        serializer = FavoriteRecipesSerializer(recipes, many=True, read_only=True)
+        return serializer.data
 
-# class ChangePasswordSerializer(serializers.ModelSerializer):
-#     old_password = serializers.CharField(write_only=True)
-#     new_password = serializers.CharField(write_only=True)
-
-#     class Meta:
-#         model = User
-#         fields = ("old_password", "new_password")
-
-#     def validate(self, attrs):
-#         user = self.instance
-#         old_password = attrs.pop("old_password")
-#         if not user.check_password(old_password):
-#             raise ParseError("Проверьте правильность текущего пароля.")
-#         return attrs
-
-#     def validate_new_password(self, value):
-#         validate_password(value)
-#         return value
-
-#     def update(self, instance, validated_data):
-#         password = validated_data.pop("new_password")
-#         instance.set_password(password)
-#         instance.save()
-#         return instance
-
-
-# class MeSerializer(serializers.ModelSerializer):
-#     profile = ProfileShortSerializer()
-
-#     class Meta:
-#         model = User
-#         fields = (
-#             "id",
-#             "first_name",
-#             "last_name",
-#             "email",
-#             "phone_number",
-#             "username",
-#             "profile",
-#             "date_joined",
-#         )
-
-
-# class MeUpdateSerializer(serializers.ModelSerializer):
-#     profile = ProfileUpdateSerializer()
-
-#     class Meta:
-#         model = User
-#         fields = (
-#             "id",
-#             "first_name",
-#             "last_name",
-#             "email",
-#             "phone_number",
-#             "username",
-#             "profile",
-#         )
-
-#     def update(self, instance, validated_data):
-#         # Проверка наличия профиля
-#         profile_data = (
-#             validated_data.pop("profile") if "profile" in validated_data else None
-#         )
-
-#         with transaction.atomic():
-#             instance = super().update(instance, validated_data)
-
-#             # # Update профиля
-#             if profile_data:
-#                 self._update_profile(instance.profile, profile_data)
-
-#         return instance
-
-#     def _update_profile(self, profile, data):
-#         profile_serializer = ProfileUpdateSerializer(
-#             instance=profile, data=data, partial=True
-#         )
-#         profile_serializer.is_valid(raise_exception=True)
-#         profile_serializer.save()
-
-
-# class UserSearchListSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = (
-#             "id",
-#             "username",
-#             "full_name",
-#         )
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()

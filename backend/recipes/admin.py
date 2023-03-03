@@ -1,14 +1,14 @@
 from django.contrib import admin
 
-from .models import Cart, Favorite, Ingredient, IngredientAmount, Recipe, Tag
+from .models import ShoppingCart, Favorite, Ingredient, IngredientAmount, Recipe, Tag
 
 
 class IngredientsInline(admin.TabularInline):
     model = IngredientAmount
 
 
-@admin.register(Cart)
-class CartAdmin(admin.ModelAdmin):
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = (
         "user",
         "recipe",

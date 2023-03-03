@@ -4,30 +4,24 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from users.managers import UserManager
-
 
 class User(AbstractUser):
-    ADMIN = "admin"
-    USER = "user"
-    ROLES = (
-        (ADMIN, "Administrator"),
-        (USER, "User"),
-    )
     username = models.CharField(
         "Имя пользователя",
         max_length=150,
         unique=True,
     )
-    first_name = models.CharField(max_length=150, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
-    email = models.EmailField("Email", max_length=254, unique=True)
-    role = models.CharField(
-        "Роль пользователя", choices=ROLES, max_length=50, default=USER
-    )
-
-    objects = UserManager()
-    REQUIRED_FIELDS = ["email", "first_name", "last_name", "password", ]
+    first_name = models.CharField("Имя", max_length=150, blank=True)
+    last_name = models.CharField("Фамилия", max_length=150, blank=True)
+    email = models.EmailField("Электронная почта", max_length=254, unique=True)
+    # objects = UserManager()
+    # USERNAME_FIELD = "email"
+    # REQUIRED_FIELDS = [
+    #     "username",
+    #     "password",
+    #     "first_name",
+    #     "last_name",
+    # ]
 
     class Meta:
         verbose_name = "Пользователь"
@@ -35,14 +29,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return str(self.username)
-
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN
-
-    @property
-    def is_user(self):
-        return self.role == self.USER
 
 
 class Follow(models.Model):
@@ -61,9 +47,11 @@ class Follow(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["author", "user"],
-                                    name="unique_follow")
+            models.UniqueConstraint(fields=["author", "user"], name="unique_follow")
         ]
         ordering = ("author", "user")
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"{self.user} подписан на {self.author}"
