@@ -4,7 +4,7 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
 from .mixins import IsSubscribedMixin
-from .models import User
+from .models import User, Follow
 
 
 class RegistrationSerializer(UserCreateSerializer):
@@ -22,7 +22,9 @@ class RegistrationSerializer(UserCreateSerializer):
         )
 
 
-class CustomUserSerializer(UserSerializer, IsSubscribedMixin):
+class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = User
         fields = (
@@ -33,6 +35,14 @@ class CustomUserSerializer(UserSerializer, IsSubscribedMixin):
             "last_name",
             "is_subscribed",
         )
+
+    def get_is_subscribed(self, data):
+        request = self.context.get("request")
+        if request is None or request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(
+            author=data, user=self.context.get("request").user
+        ).exists()
 
 
 class FollowSerializer(serializers.ModelSerializer, IsSubscribedMixin):
@@ -70,7 +80,7 @@ class FollowSerializer(serializers.ModelSerializer, IsSubscribedMixin):
         return data
 
     def get_recipes(self, obj):
-        from api.serializers import FavoriteRecipesSerializer
+        from api.v1.serializers import FavoriteRecipesSerializer
 
         request = self.context.get("request")
         limit = request.GET.get("recipes_limit")

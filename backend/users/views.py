@@ -7,12 +7,13 @@ from rest_framework.response import Response
 
 from .models import Follow, User
 from .serializers import CustomUserSerializer, FollowSerializer
+from api.pagination import CustomPagination
 
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    # pagination_class = C
+    pagination_class = CustomPagination
 
     @action(
         methods=("post", "delete"), detail=True, permission_classes=(IsAuthenticated,)

@@ -7,7 +7,7 @@ SECRET_KEY = "django-insecure-lk0^dly8$bu-#4w04hgf$92$snw*=tb1er9ojd(w7^)o00n3&p
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -60,22 +60,20 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 
 # DATABASES = {
 #     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "foodgram_db",
+#         "USER": "postgres",
+#         "PASSWORD": "postgres",
+#         "HOST": "127.0.0.1",
+#         "PORT": "5432",
 #     }
 # }
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "foodgram_db",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -121,8 +119,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 6,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "SEARCH_PARAM": "name",
 }
@@ -132,11 +128,13 @@ DJOSER = {
     "SERIALIZERS": {
         "user": "users.serializers.CustomUserSerializer",
         "user_create": "users.serializers.RegistrationSerializer",
+        "current_user": "users.serializers.CustomUserSerializer",
     },
     "PERMISSIONS": {
-        "user": ["rest_framework.permissions.AllowAny"],
-        "user_list": ["rest_framework.permissions.AllowAny"],
+        "user": ["djoser.permissions.CurrentUserOrAdminOrReadOnly"],
+        "user_list": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
     },
+    "LOGIN_FIELD": "email",
 }
 
 SPECTACULAR_SETTINGS = {

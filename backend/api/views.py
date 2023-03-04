@@ -41,6 +41,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = Recipe.objects.all()
     serializer_class = RecipeCreateSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]

@@ -84,7 +84,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(max_length=200, verbose_name="Название рецепта")
     image = models.ImageField(upload_to="recipes/", verbose_name="Картинка рецепта")
-    description = models.TextField(verbose_name="Описание рецепта")
+    text = models.TextField(verbose_name="Описание рецепта")
     ingredients = models.ManyToManyField(
         Ingredient,
         related_name="recipes",
@@ -92,7 +92,7 @@ class Recipe(models.Model):
         verbose_name="Ингредиенты",
     )
     tags = models.ManyToManyField(Tag, related_name="recipes", verbose_name="Тэг")
-    time = models.PositiveSmallIntegerField("Время приготовления")
+    cooking_time = models.PositiveSmallIntegerField("Время приготовления")
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
     class Meta:
