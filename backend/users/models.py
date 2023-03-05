@@ -11,14 +11,6 @@ class User(AbstractUser):
     first_name = models.CharField("Имя", max_length=150, blank=True)
     last_name = models.CharField("Фамилия", max_length=150, blank=True)
     email = models.EmailField("Электронная почта", max_length=254, unique=True)
-    # objects = UserManager()
-    # USERNAME_FIELD = "email"
-    # REQUIRED_FIELDS = [
-    #     "username",
-    #     "password",
-    #     "first_name",
-    #     "last_name",
-    # ]
 
     class Meta:
         verbose_name = "Пользователь"
@@ -44,7 +36,8 @@ class Follow(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["author", "user"], name="unique_follow")
+            models.UniqueConstraint(fields=["author", "user"],
+                                    name="unique_follow")
         ]
         ordering = ("author", "user")
         verbose_name = "Подписка"
