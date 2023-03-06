@@ -1,12 +1,8 @@
 from django.core.validators import MinValueValidator
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (
-    Ingredient,
-    IngredientAmount,
-    Recipe,
-    ShoppingCart,
-    Tag,
-)
+from recipes.models import Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag
 from rest_framework import serializers
 from users.serializers import CustomUserSerializer
 
@@ -102,16 +98,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if not ingredients:
             raise serializers.ValidationError("Ингредиенты отсутствуют")
         for ingredient in ingredients:
-            if ingredient["id"] in ingredients_list:
+            ingredient_id = ingredient.get("id")
+            if ingredient_id in ingredients_list:
                 raise serializers.ValidationError("Ингредиенты не могут повторяться")
-            ingredients_list.append(ingredient["id"])
-            if int(ingredient.get("amount")) < 1:
+            ingredients_list.append(ingredient_id)
+            item = get_object_or_404(klass=Ingredient, pk=int(ingredient_id))
+            if int(item.get("amount")) < 1:
                 raise serializers.ValidationError(
                     "Количество ингредиента должно быть не менее одного"
                 )
         return ingredients
 
-    def create_ingredients(self, recipe, ingredients):
+    def __create_ingredients(self, recipe, ingredients):
         ingredient_list = []
         for ingredient_data in ingredients:
             ingredient_list.append(
@@ -123,21 +121,23 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             )
         IngredientAmount.objects.bulk_create(ingredient_list)
 
+    @transaction.atomic
     def create(self, validated_data):
         tags = validated_data.pop("tags")
         ingredients = validated_data.pop("ingredients")
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.create_ingredients(recipe, ingredients)
+        self.__create_ingredients(recipe, ingredients)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         if "tags" in validated_data:
             instance.tags.set(validated_data.pop("tags"))
         if "ingredients" in validated_data:
             ingredients = validated_data.pop("ingredients")
             instance.ingredients.clear()
-            self.create_ingredients(ingredients, instance)
+            self.__create_ingredients(ingredients, instance)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
