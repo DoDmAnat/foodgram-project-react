@@ -56,17 +56,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipesSerializer
         return RecipeCreateSerializer
 
-    def add_to(self, model, user, pk):
-        if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response(
-                {"errors": "Рецепт уже добавлен."}, status=status.HTTP_400_BAD_REQUEST
-            )
+    def __add_to(self, model, user, pk):
         recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         serializer = FavoriteSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete_from(self, model, user, pk):
+    def __delete_from(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
         if obj.exists():
             obj.delete()
@@ -83,10 +79,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == "POST":
-            return self.add_to(ShoppingCart, user, pk)
+            return self.__add_to(ShoppingCart, user, pk)
 
         if request.method == "DELETE":
-            return self.delete_from(ShoppingCart, user, pk)
+            return self.__delete_from(ShoppingCart, user, pk)
 
     @action(
         methods=("post", "delete"), detail=True, permission_classes=(IsAuthenticated,)
@@ -94,9 +90,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk):
         user = request.user
         if request.method == "POST":
-            return self.add_to(Favorite, user, pk)
+            return self.__add_to(Favorite, user, pk)
         elif request.method == "DELETE":
-            return self.delete_from(Favorite, user, pk)
+            return self.__delete_from(Favorite, user, pk)
 
     @action(
         methods=("get",),

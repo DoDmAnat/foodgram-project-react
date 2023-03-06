@@ -2,7 +2,8 @@ from django.core.validators import MinValueValidator
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag
+from recipes.models import Ingredient, IngredientAmount, Recipe, ShoppingCart, \
+    Tag
 from rest_framework import serializers
 from users.serializers import CustomUserSerializer
 
@@ -26,9 +27,11 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source="ingredient.name")
-    measurement_unit = serializers.ReadOnlyField(source="ingredient.measurement_unit")
+    measurement_unit = serializers.ReadOnlyField(
+        source="ingredient.measurement_unit")
     id = serializers.ReadOnlyField(source="ingredient.id")
-    amount = serializers.IntegerField(validators=[MinValueValidator(1)], required=True)
+    amount = serializers.IntegerField(validators=[MinValueValidator(1)],
+                                      required=True)
 
     class Meta:
         model = IngredientAmount
@@ -100,7 +103,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             ingredient_id = ingredient.get("id")
             if ingredient_id in ingredients_list:
-                raise serializers.ValidationError("Ингредиенты не могут повторяться")
+                raise serializers.ValidationError(
+                    "Ингредиенты не могут повторяться")
             ingredients_list.append(ingredient_id)
             item = get_object_or_404(klass=Ingredient, pk=int(ingredient_id))
             if int(item.get("amount")) < 1:
@@ -123,6 +127,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        if "tags" in validated_data:
+            raise serializers.ValidationError("Такой тег отсутствует")
         tags = validated_data.pop("tags")
         ingredients = validated_data.pop("ingredients")
         recipe = Recipe.objects.create(**validated_data)
@@ -161,7 +167,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 class FavoriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        user = data["user"]
+        user = data.get("user")
         if user.favorites.filter(recipe=data["recipe"]).exists():
             raise serializers.ValidationError("Рецепт уже в избранном.")
         return data
@@ -173,7 +179,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        user = data["user"]
+        user = data.get("user")
         if user.shopping_cart.filter(recipe=data["recipe"]).exists():
             raise serializers.ValidationError("Рецепт уже в корзине")
         return data
