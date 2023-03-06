@@ -36,13 +36,11 @@ class CustomUserSerializer(UserSerializer):
             "is_subscribed",
         )
 
-    def get_is_subscribed(self, data):
+    def get_is_subscribed(self, obj):
         request = self.context.get("request")
-        if request is None or request.user.is_anonymous:
+        if not request or request.user.is_anonymous:
             return False
-        return Follow.objects.filter(
-            author=data, user=self.context.get("request").user
-        ).exists()
+        return obj.following.filter(author=obj, user=request.user).exists()
 
 
 class FollowSerializer(serializers.ModelSerializer, IsSubscribedMixin):
@@ -80,14 +78,14 @@ class FollowSerializer(serializers.ModelSerializer, IsSubscribedMixin):
         return data
 
     def get_recipes(self, obj):
-        from api.v1.serializers import FavoriteRecipesSerializer
+        from api.serializers import FavoriteSerializer
 
         request = self.context.get("request")
         limit = request.GET.get("recipes_limit")
         recipes = obj.recipes.all()
         if limit:
             recipes = recipes[: int(limit)]
-        serializer = FavoriteRecipesSerializer(recipes, many=True, read_only=True)
+        serializer = FavoriteSerializer(recipes, many=True, read_only=True)
         return serializer.data
 
     def get_recipes_count(self, obj):

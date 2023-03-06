@@ -1,18 +1,38 @@
 from django.db import models
 from users.models import User
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=20, unique=True)
+    name = models.CharField(
+        max_length=20,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[\w]+\Z", message="Допускаются только буквы и цифры"
+            )
+        ],
+    )
     slug = models.SlugField(max_length=10, unique=True)
-    color = models.CharField(max_length=7, default="#ffffff", verbose_name="HEX-код")
+    color = models.CharField(
+        max_length=7,
+        default="#ffffff",
+        verbose_name="HEX-код",
+        validators=[
+            RegexValidator(
+                regex=r"^#(?:[0-9a-fA-F]{3}){1,2}$",
+                message="Неправильный формат HEX Color",
+            )
+        ],
+    )
 
     class Meta:
         ordering = ("-id",)
         verbose_name = "Тег"
         verbose_name_plural = "Теги"
-        constraints = [models.UniqueConstraint(fields=["slug"], name="unique_slug")]
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="Такой тэг уже добавлен")
+        ]
 
     def __str__(self):
         return self.name
