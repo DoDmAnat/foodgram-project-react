@@ -3,8 +3,7 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
-from .mixins import IsSubscribedMixin
-from .models import User, Follow
+from .models import User
 
 
 class RegistrationSerializer(UserCreateSerializer):
@@ -23,7 +22,7 @@ class RegistrationSerializer(UserCreateSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField("get_is_subscribed")
 
     class Meta:
         model = User
@@ -40,10 +39,10 @@ class CustomUserSerializer(UserSerializer):
         request = self.context.get("request")
         if not request or request.user.is_anonymous:
             return False
-        return obj.following.filter(author=obj, user=request.user).exists()
+        return obj.following.filter(user=request.user).exists()
 
 
-class FollowSerializer(serializers.ModelSerializer, IsSubscribedMixin):
+class FollowSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField("get_recipes_count")
 

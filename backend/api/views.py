@@ -2,7 +2,14 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    ShoppingCart,
+    Tag,
+    IngredientAmount,
+)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -94,36 +101,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
         elif request.method == "DELETE":
             return self.__delete_from(Favorite, user, pk)
 
-    @action(
-        methods=("get",),
-        detail=False,
-        permission_classes=(IsAuthenticated,),
-    )
+    @action(methods=("get"), detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        user = request.user
-        if user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        recipes_query = Recipe.objects.filter(
-            shoppingcart_recipes__owner=self.request.user
-        ).all()
-
-        ingredients_query = (
-            recipes_query.values(
-                "ingredients_recipes__ingredient__name",
-                "ingredients_recipes__ingredient__measurement_unit",
+        ingredients = (
+            IngredientAmount.objects.filter(recipe__shopping_cart__user=request.user)
+            .values("ingredient__name", "ingredient__measurement_unit")
+            .order_by("ingredient__name")
+            .annotate(total=Sum("amount"))
+        )
+        result = "Cписок покупок:\n\nНазвание продукта - Кол-во/Ед.изм.\n"
+        for ingredient in ingredients:
+            result += "".join(
+                [
+                    f'{ingredient["ingredient__name"]} - {ingredient["total"]}/'
+                    f'{ingredient["ingredient__measurement_unit"]} \n'
+                ]
             )
-            .annotate(amount=Sum("ingredients_recipes__amount"))
-            .order_by()
-        )
-
-        text = "\n".join(
-            [
-                f"{item['ingredients_recipes__ingredient__name']}: "
-                f"{item['amount']}, "
-                f"{item['ingredients_recipes__ingredient__measurement_unit']}"
-                for item in ingredients_query
-            ]
-        )
         filename = "shopping_card.txt"
         response = HttpResponse(text, content_type="text/plain")
         response["Content-Disposition"] = f"attachment'; filename={filename}"
