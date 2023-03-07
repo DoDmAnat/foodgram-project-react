@@ -71,7 +71,7 @@ docker-compose exec backend python manage.py createsuperuser
 docker-compose exec backend python manage.py collectstatic --no-input
 ```
 
-<!-- 4. Внутри контейнера backend выполнить команду для заполнения БД тестовыми данными
+4. Внутри контейнера backend выполнить команду для заполнения БД тестовыми данными
 
 ```
 docker-compose exec backend python manage.py import_data
@@ -87,12 +87,12 @@ docker-compose exec backend python manage.py dumpdata > fixtures.json
 
 Необходимо указать переменные окружения в следующем формате:
 
-DB_ENGINE=_СУБД_
-DB_NAME=_имя БД_
-POSTGRES_USER=_логин для подключения к БД_
-POSTGRES_PASSWORD=_пароль для подключения к БД_
-DB_HOST=_название сервиса (контейнера)_
-DB_PORT=_порт для подключения к БД_
-SECRET_KEY = _уникальный секретный ключ Django_ -->
+DB*ENGINE=*СУБД*
+DB_NAME=*имя БД*
+POSTGRES_USER=*логин для подключения к БД*
+POSTGRES_PASSWORD=*пароль для подключения к БД*
+DB_HOST=*название сервиса (контейнера)*
+DB_PORT=*порт для подключения к БД*
+SECRET_KEY = *уникальный секретный ключ Django\_
 
 ## Автор: Домрачев Дмитрий [Dodmanat](https://github.com/Dodmanat)
