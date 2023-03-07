@@ -132,4 +132,3 @@ dmypy.json
 .idea
 
 /backend/media/
-/backend/static/
