@@ -8,7 +8,7 @@ services:
       - ./.env
 
   backend:
-    image: dodmanat/backend_foodgram
+    image: dodmanat/backend_foodgram:latest
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
@@ -18,7 +18,7 @@ services:
       - ./.env
 
   frontend:
-    image: dodmanat/frontend
+    image: dodmanat/frontend_foodgram:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
