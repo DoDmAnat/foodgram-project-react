@@ -57,10 +57,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             sudo docker-compose stop
-            sudo docker-compose rm $(sudo docker container ps -aq)
-            sudo docker image rm $(sudo docker image ls -aq)
-            sudo docker container prune -f
-            sudo docker image prune -f
+            sudo docker-compose rm backend
             rm .env
             touch .env
             sudo docker pull dodmanat/backend_foodgram:latest
