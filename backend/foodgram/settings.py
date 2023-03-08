@@ -25,7 +25,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "drf_spectacular",
     "rest_framework",
     "rest_framework.authtoken",
     "django_filters",
@@ -122,7 +121,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "SEARCH_PARAM": "name",
 }
 
@@ -149,3 +147,4 @@ SPECTACULAR_SETTINGS = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_URLS_REGEX = r"^/api/.*$"
+CORS_URLS_REGEX = r"^/admin/.*$"
