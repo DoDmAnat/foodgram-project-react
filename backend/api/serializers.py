@@ -78,6 +78,14 @@ class RecipesSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
+    ingredients = IngredientAmountSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Tag.objects.all(),
+        error_messages={'does_not_exist': 'Указанного тега не существует'}
+    )
+    image = Base64ImageField()
+    author = CustomUserSerializer(read_only=True)
+    cooking_time = serializers.IntegerField()
     def validate_tags(self, tags):
         for tag in tags:
             if not Tag.objects.filter(id=tag.id).exists():
