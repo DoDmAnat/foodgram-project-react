@@ -135,7 +135,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        if not validated_data.get("tags"):
+        if not "tags" in validated_data:
             raise KeyError("Отсутствует тэг")
         tags = validated_data.pop("tags")
         ingredients = validated_data.pop("ingredients")
@@ -175,8 +175,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 class FavoriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        user = data["user"]
-        if user.favorites.filter(recipe=data["recipe"]).exists():
+        user = data.get('user')
+        if user.favorites.filter(recipe=data.get('recipe')).exists():
             raise serializers.ValidationError("Рецепт уже в избранном.")
         return data
 
@@ -187,8 +187,8 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        user = data["user"]
-        if user.shopping_cart.filter(recipe=data["recipe"]).exists():
+        user = data.get('user')
+        if user.shopping_cart.filter(recipe=data.get('recipe')).exists():
             raise serializers.ValidationError("Рецепт уже в корзине")
         return data
 

@@ -1,4 +1,15 @@
+![Workflow Foodgram](https://github.com/dodmanat/foodgram-project-react/actions/workflows/yamdb_workflow.yml/badge.svg?branch=master&event=push)
+
 # Foodgram - Продуктовый помошник
+
+## Адрес
+
+http://51.250.25.57/
+
+## Админка
+
+    login - admin
+    password - admin
 
 ###
 
@@ -8,12 +19,13 @@
 
 ## **Технологии**
 
-Django  
-Django Rest Framework  
-Docker  
-Nginx  
-Gunicorn  
-Postgres
+[![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
+[![Django REST Framework](https://img.shields.io/badge/-Django%20REST%20Framework-464646?style=flat-square&logo=Django%20REST%20Framework)](https://www.django-rest-framework.org/)
+[![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat-square&logo=PostgreSQL)](https://www.postgresql.org/)
+[![Nginx](https://img.shields.io/badge/-NGINX-464646?style=flat-square&logo=NGINX)](https://nginx.org/ru/)
+[![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org/)
+[![docker](https://img.shields.io/badge/-Docker-464646?style=flat-square&logo=docker)](https://www.docker.com/)
 
 ## **Запуск проекта**
 
@@ -83,16 +95,6 @@ docker-compose exec backend python manage.py import_data
 docker-compose exec backend python manage.py dumpdata > fixtures.json
 ```
 
-### _Описание шаблона .env_
-
-Необходимо указать переменные окружения в следующем формате:
-
-DB*ENGINE=*СУБД*
-DB_NAME=*имя БД*
-POSTGRES_USER=*логин для подключения к БД*
-POSTGRES_PASSWORD=*пароль для подключения к БД*
-DB_HOST=*название сервиса (контейнера)*
-DB_PORT=*порт для подключения к БД*
-SECRET_KEY = *уникальный секретный ключ Django\_
+[API документация](http://51.250.25.57.ru/docs/redoc.html)
 
 ## Автор: Домрачев Дмитрий [Dodmanat](https://github.com/Dodmanat)

@@ -1,21 +1,19 @@
-from datetime import datetime
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (ShoppingCart, Favorite, Ingredient, IngredientAmount, Recipe,
+from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (CartSerializer, FavoriteSerializer,
+from .serializers import (FavoriteSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           RecipesSerializer, TagSerializer)
 
@@ -104,17 +102,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'ingredient__name',
             'ingredient__measurement_unit'
         ).annotate(amount=Sum('amount'))
-        today = datetime.today()
-        shopping_list = (
+        text = (
             f'Список покупок пользователя: {user}\n'
-            f'Дата: {today:%Y-%m-%d}\n'
         )
-        shopping_list += '\n'.join([
+        text += '\n'.join([
             f'- {ingredient["ingredient__name"]} - {ingredient["amount"]} '
             f'{ingredient["ingredient__measurement_unit"]}'
             for ingredient in recipes_query
         ])
         filename = 'shopping_list.txt'
-        response = HttpResponse(shopping_list, content_type='text/plain')
+        response = HttpResponse(text, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
