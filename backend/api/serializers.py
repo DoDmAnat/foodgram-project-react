@@ -109,6 +109,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Ингредиенты не могут повторяться")
             ingredients_list.append(ingredient_id)
             item = get_object_or_404(klass=Ingredient, pk=int(ingredient_id))
+            if type(ingredient.get("amount")) is not int:
+                raise TypeError("Должно быть целое число")
             if int(item.get("amount")) < 1:
                 raise serializers.ValidationError(
                     "Количество ингредиента должно быть не менее одного"
@@ -116,20 +118,16 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return ingredients
 
     def __create_ingredients(self, recipe, ingredients):
-        ingredients_list = [] 
-        if not ingredients: 
-            raise serializers.ValidationError("Ингредиенты отсутствуют") 
-        for ingredient in ingredients: 
-            if ingredient.get("id") in ingredients_list: 
-                raise serializers.ValidationError("Ингредиенты не могут повторяться") 
-            ingredients_list.append(ingredient.get("id"))
-            if type(ingredient.get("amount")) is not int:
-                raise TypeError("Должно быть целое число")
-            if int(ingredient.get("amount")) < 1: 
-                raise serializers.ValidationError( 
-                    "Количество ингредиента должно быть не менее одного" 
+        ingredient_list = [] 
+        for ingredient_data in ingredients: 
+            ingredient_list.append( 
+                IngredientAmount( 
+                    ingredient=ingredient_data.pop("id"), 
+                    amount=ingredient_data.pop("amount"), 
+                    recipe=recipe, 
                 ) 
-        return ingredients 
+            ) 
+        IngredientAmount.objects.bulk_create(ingredient_list)
 
     @transaction.atomic
     def create(self, validated_data):
