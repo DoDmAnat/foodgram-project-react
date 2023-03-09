@@ -104,7 +104,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if not ingredients:
             raise serializers.ValidationError("Ингредиенты отсутствуют")
         for ingredient in ingredients:
-            ingredient_id = ingredient.get("id")
+            ingredient_id = ingredient["id"]
+            print(ingredient_id)
             if ingredient_id in ingredients_list:
                 raise serializers.ValidationError("Ингредиенты не могут повторяться")
             ingredients_list.append(ingredient_id)
