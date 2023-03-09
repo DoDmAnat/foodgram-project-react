@@ -1,34 +1,23 @@
+from datetime import datetime
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (
-    Favorite,
-    Ingredient,
-    Recipe,
-    ShoppingCart,
-    Tag,
-    IngredientAmount,
-)
+from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
+                            ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    SAFE_METHODS,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (
-    FavoriteSerializer,
-    IngredientSerializer,
-    RecipeCreateSerializer,
-    RecipesSerializer,
-    TagSerializer,
-)
+from .serializers import (CartSerializer, FavoriteSerializer,
+                          IngredientSerializer, RecipeCreateSerializer,
+                          RecipesSerializer, TagSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -49,11 +38,12 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeCreateSerializer
+    # serializer_class = RecipeCreateSerializer
     pagination_class = CustomPagination
+    permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
-    permission_classes = (IsAuthorOrReadOnly,)
+    
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -103,30 +93,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(methods=("get"), detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request): 
-        user = request.user 
-        if user.is_anonymous: 
-            return Response(status=status.HTTP_401_UNAUTHORIZED) 
-        recipes_query = Recipe.objects.filter( 
-            shoppingcart_recipes__owner=self.request.user 
-        ).all() 
- 
-        ingredients_query = ( 
-            recipes_query.values( 
-                "ingredients_recipes__ingredient__name", 
-                "ingredients_recipes__ingredient__measurement_unit", 
-            ) 
-            .annotate(amount=Sum("ingredients_recipes__amount")) 
-            .order_by() 
-        ) 
- 
-        text = "\n".join( 
-            [ 
-                f"{item['ingredients_recipes__ingredient__name']}: " 
-                f"{item['amount']}, " 
-                f"{item['ingredients_recipes__ingredient__measurement_unit']}" 
-                for item in ingredients_query 
-            ] 
-        ) 
-        filename = "shopping_card.txt" 
-        response = HttpResponse(text, content_type="text/plain") 
-        response["Content-Disposition"] = f"attachment'; filename={filename}"
+        user = request.user
+        if not user.shopping_cart.exists():
+            return Response(status=HTTP_400_BAD_REQUEST)
+        ingredients = IngredientAmount.objects.filter(
+            recipe__shopping_cart__user=user
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(amount=Sum('amount'))
+        today = datetime.today()
+        shopping_list = (
+            f'Список покупок пользователя: {user}\n'
+            f'Дата: {today:%Y-%m-%d}\n'
+        )
+        shopping_list += '\n'.join([
+            f'- {ingredient["ingredient__name"]} - {ingredient["amount"]} '
+            f'{ingredient["ingredient__measurement_unit"]}'
+            for ingredient in ingredients
+        ])
+        filename = f'{user}_shopping_list.txt'
+        response = HttpResponse(shopping_list, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+        return response
