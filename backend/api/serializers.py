@@ -108,10 +108,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             if ingredient_id in ingredients_list:
                 raise serializers.ValidationError("Ингредиенты не могут повторяться")
             ingredients_list.append(ingredient_id)
-            item = get_object_or_404(klass=Ingredient, pk=int(ingredient_id))
-            if type(ingredient.get("amount")) is not int:
-                raise TypeError("Должно быть целое число")
-            if int(item.get("amount")) < 1:
+            if (ingredient.get("amount")).isdigit() == False:
+                raise serializers.ValidationError("Должно быть целое число")
+            if int(ingredient.get("amount")) < 1:
                 raise serializers.ValidationError(
                     "Количество ингредиента должно быть не менее одного"
                 )
