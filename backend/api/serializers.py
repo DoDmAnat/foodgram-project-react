@@ -151,7 +151,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if "ingredients" in validated_data:
             ingredients = validated_data.pop("ingredients")
             instance.ingredients.clear()
-            self.__create_ingredients(ingredients, instance)
+            self.__create_ingredients(instance, ingredients)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
