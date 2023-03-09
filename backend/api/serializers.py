@@ -99,21 +99,21 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             )
         return cooking_time
 
-    def validate_ingredients(self, ingredients):
-        ingredients_list = []
+    def validate_ingredients(self, data):
+        ingredients = data.get('ingredients')
         if not ingredients:
             raise serializers.ValidationError("Ингредиенты отсутствуют")
+        ingredients_list = []
         for ingredient in ingredients:
-            ingredient_id = ingredient["id"]
-            print(ingredient_id)
-            if ingredient_id in ingredients_list:
-                raise serializers.ValidationError("Ингредиенты не могут повторяться")
-            ingredients_list.append(ingredient_id)
+            ingredient_id = ingredient.get('id')
             if int(ingredient.get("amount")) < 1:
                 raise serializers.ValidationError(
                     "Количество ингредиента должно быть не менее одного"
                 )
-        return ingredients
+            if ingredient_id in ingredients_list:
+                raise serializers.ValidationError("Ингредиенты не могут повторяться")
+            ingredients_list.append(ingredient_id)
+        return data
 
     def __create_ingredients(self, recipe, ingredients):
         ingredient_list = [] 

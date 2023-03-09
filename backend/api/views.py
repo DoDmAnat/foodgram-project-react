@@ -70,7 +70,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     @action(
-        methods=["POST", "DELETE"], detail=True, permission_classes=(IsAuthenticated,)
+        methods=["POST", "DELETE"], detail=True, permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, pk):
         user = request.user
@@ -82,7 +82,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.__delete_from(ShoppingCart, user, pk)
 
     @action(
-        methods=["POST", "DELETE"], detail=True, permission_classes=(IsAuthenticated,)
+        methods=["POST", "DELETE"], detail=True, permission_classes=[IsAuthenticated]
     )
     def favorite(self, request, pk):
         user = request.user
@@ -92,10 +92,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.__delete_from(Favorite, user, pk)
 
     @action(
-        detail=False,
-        methods=["GET"],
-
-        permission_classes=[IsAuthenticated]
+        methods=["GET"], detail=False, permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request): 
         user = request.user
