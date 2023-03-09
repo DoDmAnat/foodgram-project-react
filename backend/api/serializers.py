@@ -76,9 +76,16 @@ class RecipesSerializer(serializers.ModelSerializer):
             "cooking_time",
         )
 
+class AddIngredientSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    amount = serializers.IntegerField()
+
+    class Meta:
+        model = IngredientAmount
+        fields = ('id', 'amount')
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    ingredients = IngredientAmountSerializer(many=True)
+    ingredients = AddIngredientSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Tag.objects.all(),
         error_messages={'does_not_exist': 'Указанного тега не существует'}
@@ -99,8 +106,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             )
         return cooking_time
 
-    def validate_ingredients(self, data):
-        ingredients = data.get('ingredients')
+    def validate_ingredients(self, ingredients):
         if not ingredients:
             raise serializers.ValidationError("Ингредиенты отсутствуют")
         ingredients_list = []
@@ -113,15 +119,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             if ingredient_id in ingredients_list:
                 raise serializers.ValidationError("Ингредиенты не могут повторяться")
             ingredients_list.append(ingredient_id)
-        return data
+        return ingredients
 
     def __create_ingredients(self, recipe, ingredients):
         ingredient_list = [] 
         for ingredient_data in ingredients: 
             ingredient_list.append( 
-                IngredientAmount( 
-                    ingredient=ingredient_data.get("id"), 
-                    amount=ingredient_data.get("amount"), 
+                IngredientAmount(
+                    ingredient=ingredient_data.pop("id"), 
+                    amount=ingredient_data.pop("amount"), 
                     recipe=recipe, 
                 ) 
             ) 
