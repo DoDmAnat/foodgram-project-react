@@ -99,21 +99,16 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     cooking_time = serializers.IntegerField()
 
     def validate_recipe(self, data):
-        request = self.context['request']
-        if request.method == 'POST' and Recipe.objects.filter(
-                name=data.get('name'),
-                text=data.get('text'),
-                tags=data.get('tags'),
-                ingredients=data.get('ingredients'),
-                image=data.get('image')).exists():
+        obj = Recipe.objects.all()
+        request = self.context.get('request')
+        if request.method == 'POST' and obj.exists():
             raise serializers.ValidationError(
                 "Такой рецепт уже существует"
             )
-
-        # if (
-        #         request.method == 'DELETE' and request.user != data[
-        #     'recipe'].author):
-        #     raise serializers.ValidationError(ONLY_AUTHOR_CAN_DELETE_RECIPE)
+        if request.method == 'DELETE' and not obj.exists():
+            raise serializers.ValidationError(
+                'Нет такого рецепта или он уже был удален!'
+            )
         return data
 
     def validate_tags(self, tags):
