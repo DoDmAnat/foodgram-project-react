@@ -114,7 +114,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         #         request.method == 'DELETE' and request.user != data[
         #     'recipe'].author):
         #     raise serializers.ValidationError(ONLY_AUTHOR_CAN_DELETE_RECIPE)
-        # return data
+        return data
 
     def validate_tags(self, tags):
         for tag in tags:

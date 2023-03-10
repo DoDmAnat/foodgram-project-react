@@ -34,7 +34,10 @@ class CustomUserViewSet(UserViewSet):
             get_object_or_404(Follow, user=follower, author=author).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, permission_classes=(IsAuthenticated,))
+    @action(
+        detail=False,
+        permission_classes=(IsAuthenticated,)
+    )
     def subscriptions(self, request):
         follower = request.user
         queryset = User.objects.filter(following__user=follower)
