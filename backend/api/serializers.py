@@ -98,18 +98,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     cooking_time = serializers.IntegerField()
 
-    def validate_recipe(self, data):
-        obj = Recipe.objects.all()
-        request = self.context.get('request')
-        if request.method == 'POST' and obj.exists():
-            raise serializers.ValidationError(
-                "Такой рецепт уже существует"
-            )
-        if request.method == 'DELETE' and not obj.exists():
-            raise serializers.ValidationError(
-                'Нет такого рецепта или он уже был удален!'
-            )
-        return data
+    # def validate_recipe(self, data):
+    #     obj = Recipe.objects.all()
+    #     request = self.context.get('request')
+    #     if request.method == 'POST' and obj.exists():
+    #         raise serializers.ValidationError(
+    #             "Такой рецепт уже существует"
+    #         )
+    #     if request.method == 'DELETE' and not obj.exists():
+    #         raise serializers.ValidationError(
+    #             'Нет такого рецепта или он уже был удален!'
+    #         )
+    #     return data
 
     def validate_tags(self, tags):
         for tag in tags:
@@ -190,13 +190,23 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             "text",
             "cooking_time",
         )
-
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Recipe.objects.all(),
+                fields=["name", "ingredients", "text"],
+                message='Такой рецепт уже существует.'
+            )
+        ]
 
 class FavoriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = data.get('user')
-        if user.favorites.filter(recipe=data.get('recipe')).exists():
+        obj = user.favorites.filter(recipe=data.get('recipe'))
+        if obj.exists():
             raise serializers.ValidationError("Рецепт уже в избранном.")
+        if self.context.get('request').method == 'DELETE' and not obj.exists():
+            raise serializers.ValidationError(
+                "Такого рецепта нет в избранном.")
         return data
 
     class Meta:
@@ -207,8 +217,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = data.get('user')
-        if user.shopping_cart.filter(recipe=data.get('recipe')).exists():
+        obj = user.shopping_cart.filter(recipe=data.get('recipe'))
+        if obj.exists():
             raise serializers.ValidationError("Рецепт уже в корзине")
+        if self.context.get('request').method == 'DELETE' and not obj.exists():
+            raise serializers.ValidationError(
+                "Этот рецепт отсутствует в корзине"
+            )
         return data
 
     def to_representation(self, instance):
