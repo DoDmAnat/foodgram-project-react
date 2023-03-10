@@ -9,7 +9,8 @@ class Tag(models.Model):
         unique=True,
         validators=[
             RegexValidator(
-                regex=r"^[\w]+\Z", message="Допускаются только буквы и цифры"
+                regex=r"^[\w]+\Z",
+                message="Допускаются только буквы и цифры",
             )
         ],
     )
@@ -31,7 +32,10 @@ class Tag(models.Model):
         verbose_name = "Тег"
         verbose_name_plural = "Теги"
         constraints = [
-            models.UniqueConstraint(fields=["slug"], name="Такой тэг уже добавлен")
+            models.UniqueConstraint(
+                fields=["slug"],
+                name="Такой тэг уже добавлен",
+            )
         ]
 
     def __str__(self):
@@ -39,8 +43,10 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Название ингредиента")
-    measurement_unit = models.CharField(max_length=20, verbose_name="Единица измерения")
+    name = models.CharField(max_length=100,
+                            verbose_name="Название ингредиента")
+    measurement_unit = models.CharField(max_length=20,
+                                        verbose_name="Единица измерения")
 
     class Meta:
         verbose_name = "Ингредиент"
@@ -103,7 +109,8 @@ class Recipe(models.Model):
         verbose_name="Автор рецепта",
     )
     name = models.CharField(max_length=200, verbose_name="Название рецепта")
-    image = models.ImageField(upload_to="recipes/", verbose_name="Картинка рецепта")
+    image = models.ImageField(upload_to="recipes/",
+                              verbose_name="Картинка рецепта")
     text = models.TextField(verbose_name="Описание рецепта")
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -111,7 +118,8 @@ class Recipe(models.Model):
         through="IngredientAmount",
         verbose_name="Ингредиенты",
     )
-    tags = models.ManyToManyField(Tag, related_name="recipes", verbose_name="Тэг")
+    tags = models.ManyToManyField(Tag, related_name="recipes",
+                                  verbose_name="Тэг")
     cooking_time = models.PositiveSmallIntegerField("Время приготовления")
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
@@ -144,7 +152,8 @@ class Favorite(models.Model):
         ordering = ("-id",)
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "recipe"], name="Рецепт уже в избранном"
+                fields=["user", "recipe"],
+                name="Рецепт уже в избранном",
             )
         ]
 
@@ -169,7 +178,8 @@ class ShoppingCart(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "recipe"], name="Рецепт уже в корзине"
+                fields=["user", "recipe"],
+                name="Рецепт уже в корзине",
             )
         ]
         ordering = ("-id",)

@@ -89,12 +89,162 @@ docker-compose exec backend python manage.py collectstatic --no-input
 docker-compose exec backend python manage.py import_data
 ```
 
-5. Чтобы сделать резервную копию базы данных, выполните команду
+5. Для загрузки данных в базу выполнить команду:
 
 ```
-docker-compose exec backend python manage.py dumpdata > fixtures.json
+docker-compose exec foodgram_backend python manage.py loaddata data/fixtures.json
+```
+### Примеры запросов
+
+### Регистрация нового пользователя:
+
+```bash
+POST - 'http://localhost/api/users/'
+```
+```yaml
+{
+  "username": "user_username.",
+  "email": "user@mail.ru",
+  "password": "user_password.",
+  "first_name": "user_first_name",
+  "last_name": "user_last_name"
+}
 ```
 
-[API документация](http://51.250.25.57.ru/docs/redoc.html)
+#### Ответ
+```yaml
+{
+  "id": 2,
+  "username": "user_username.",
+  "email": "user@mail.ru",
+  "first_name": "user_first_name",
+  "last_name": "user_last_name"
+}
+```
+
+### Получение токена:
+#### Запрос
+```bash
+POST - 'http://localhost/api/auth/token/login/'
+```
+```yaml
+{
+  "password": "user_password.",
+  "email": "user@mail.ru"
+}
+```
+
+#### Ответ
+```yaml
+{ "auth_token": "token_value" }
+```
+
+### Информация о своей учетной записи:
+#### Запрос
+```bash
+GET - 'http://localhost/api/users/me/'
+header 'Authorization: Token "token_value"'
+```
+
+#### Ответ
+```yaml
+{
+  "id": 2,
+  "username": "user_username.",
+  "email": "user@mail.ru",
+  "first_name": "user_first_name",
+  "last_name": "user_last_name",
+  "is_subscribed": false
+}
+```
+
+### Добавление нового рецепта:
+#### Запрос
+```bash
+POST - 'http://localhost/api/recipes/'
+header 'Authorization: Token "token_value"'
+```
+```yaml
+{
+  "ingredients": [
+    {
+      "id": 11,
+      "amount": 270
+    },
+    {
+      "id": 38,
+      "amount": 2
+    },
+    {
+      "id": 267,
+      "amount": 30
+    },
+  ],
+  "tags": [
+    1,
+    2
+  ],
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+  "name": "Название рецепта",
+  "text": "Описание рецепта",
+  "cooking_time": 15
+}
+```
+
+#### Ответ
+```yaml
+{
+  "id": 4,
+  "tags": [
+    {
+      "id": 1,
+      "name": "Завтрак",
+      "color": "#E26C2D",
+      "slug": "breakfast"
+    },
+    {
+      "id": 2,
+      "name": "Обед",
+      "color": "#0000CD",
+      "slug": "dinner"
+    }
+  ],
+  "author": {
+    "id": 2,
+    "username": "user_username.",
+    "email": "user@mail.ru",
+    "first_name": "user_first_name",
+    "last_name": "user_last_name",
+    "is_subscribed": false
+  },
+  "ingredients": [
+    {
+      "id": 11,
+      "name": "Вода",
+      "measurement_unit": "мл",
+      "amount": 270
+    },
+    {
+      "id": 38,
+      "name": "Сахар",
+      "measurement_unit": "ч. ложка",
+      "amount": 2
+    },
+    {
+      "id": 267,
+      "name": "Молоко",
+      "measurement_unit": "мл",
+      "amount": 30
+    }
+  ],
+  "is_favorited": false,
+  "is_in_shopping_cart": false,
+  "name": "Название рецепта",
+  "image":"http://foodgram.example.org/media/recipes/images/image.jpeg",
+  "text": "Описание рецепта.",
+  "cooking_time": 15
+}
+```
+[API документация](http://51.250.25.57/api/docs/redoc.html)
 
 ## Автор: Домрачев Дмитрий [Dodmanat](https://github.com/Dodmanat)

@@ -16,7 +16,8 @@ class CustomUserViewSet(UserViewSet):
     pagination_class = CustomPagination
 
     @action(
-        methods=("post", "delete"), detail=True, permission_classes=(IsAuthenticated,)
+        methods=("post", "delete"), detail=True,
+        permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, id):
         author = get_object_or_404(User, pk=id)
@@ -38,5 +39,6 @@ class CustomUserViewSet(UserViewSet):
         follower = request.user
         queryset = User.objects.filter(following__user=follower)
         pages = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(pages, many=True, context={"request": request})
+        serializer = FollowSerializer(pages, many=True,
+                                      context={"request": request})
         return self.get_paginated_response(serializer.data)

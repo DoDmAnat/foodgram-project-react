@@ -41,7 +41,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
-    
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -68,7 +67,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     @action(
-        methods=["POST", "DELETE"], detail=True, permission_classes=[IsAuthenticated]
+        methods=["POST", "DELETE"], detail=True,
+        permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, pk):
         user = request.user
@@ -80,7 +80,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.__delete_from(ShoppingCart, user, pk)
 
     @action(
-        methods=["POST", "DELETE"], detail=True, permission_classes=[IsAuthenticated]
+        methods=["POST", "DELETE"], detail=True,
+        permission_classes=[IsAuthenticated]
     )
     def favorite(self, request, pk):
         user = request.user
@@ -92,9 +93,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=["GET"], detail=False, permission_classes=[IsAuthenticated]
     )
-    def download_shopping_cart(self, request): 
+    def download_shopping_cart(self, request):
         user = request.user
-        if user.is_anonymous: 
+        if user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         recipes_query = IngredientAmount.objects.filter(
             recipe__shopping_cart__user=user
