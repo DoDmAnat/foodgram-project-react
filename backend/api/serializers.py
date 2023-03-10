@@ -100,7 +100,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def validate_recipe(self, data):
         request = self.context['request']
-        if request.method == 'POST' and data.get('recipe').exists():
+        if request.method == 'POST' and data.get('recipes').exists():
             raise serializers.ValidationError(
                 "Такой рецепт уже существует"
             )
