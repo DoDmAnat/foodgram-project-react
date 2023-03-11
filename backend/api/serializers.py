@@ -86,7 +86,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientAmount
         fields = ('id', 'amount')
-    
+
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = AddIngredientSerializer(many=True)
@@ -181,6 +181,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             "text",
             "cooking_time",
         )
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
