@@ -36,8 +36,10 @@ class Follow(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["author", "user"],
-                                    name="unique_follow")
+            models.UniqueConstraint(
+            fields=["author", "user"],
+            name="unique_follow"
+            )
         ]
         ordering = ("author", "user")
         verbose_name = "Подписка"

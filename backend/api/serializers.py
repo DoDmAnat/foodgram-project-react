@@ -86,7 +86,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientAmount
         fields = ('id', 'amount')
-
+    
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = AddIngredientSerializer(many=True)
@@ -97,19 +97,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(read_only=True)
     cooking_time = serializers.IntegerField()
-
-    # def validate_recipe(self, data):
-    #     obj = Recipe.objects.all()
-    #     request = self.context.get('request')
-    #     if request.method == 'POST' and obj.exists():
-    #         raise serializers.ValidationError(
-    #             "Такой рецепт уже существует"
-    #         )
-    #     if request.method == 'DELETE' and not obj.exists():
-    #         raise serializers.ValidationError(
-    #             'Нет такого рецепта или он уже был удален!'
-    #         )
-    #     return data
 
     def validate_tags(self, tags):
         for tag in tags:
@@ -130,7 +117,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients_list = []
         for ingredient in ingredients:
             ingredient_id = ingredient.get('id')
-            if int(ingredient.get("amount")) < 1:
+            if ingredient.get("amount") < 1:
                 raise serializers.ValidationError(
                     "Количество ингредиента должно быть не менее одного"
                 )
@@ -156,6 +143,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if "tags" not in validated_data:
             raise KeyError("Отсутствует тэг")
+        name = validated_data.get("name")
+        text = validated_data.get("text")
+        if Recipe.objects.filter(name=name, text=text).exists():
+            raise serializers.ValidationError("Такой рецепт уже существует")
         tags = validated_data.pop("tags")
         ingredients = validated_data.pop("ingredients")
         recipe = Recipe.objects.create(**validated_data)
@@ -190,13 +181,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             "text",
             "cooking_time",
         )
-        validators = [
-            serializers.UniqueTogetherValidator(
-                queryset=Recipe.objects.all(),
-                fields=["name", "ingredients", "text"],
-                message='Такой рецепт уже существует.'
-            )
-        ]
 
 class FavoriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
