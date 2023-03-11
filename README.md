@@ -1,4 +1,4 @@
-![Workflow Foodgram](https://github.com/dodmanat/foodgram-project-react/actions/workflows/yamdb_workflow.yml/badge.svg?branch=master&event=push)
+![Workflow Foodgram](https://github.com/dodmanat/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg?branch=master&event=push)
 
 # Foodgram - Продуктовый помошник
 

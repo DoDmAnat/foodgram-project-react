@@ -46,20 +46,6 @@ class FollowSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField("get_recipes_count")
 
-    class Meta:
-        model = User
-        fields = (
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "is_subscribed",
-            "recipes",
-            "recipes_count",
-        )
-        read_only_fields = ("email", "username", "first_name", "last_name")
-
     def validate(self, data):
         author_id = self.context.get("request").parser_context.get(
             "kwargs").get("id")
@@ -90,3 +76,17 @@ class FollowSerializer(CustomUserSerializer):
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
+
+    class Meta:
+        model = User
+        fields = (
+            "email",
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+            "recipes",
+            "recipes_count",
+        )
+        read_only_fields = ("email", "username", "first_name", "last_name")
